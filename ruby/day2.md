@@ -230,4 +230,95 @@ sum: 12 i: 1   sum + i: 13
  => 13
 ```
 
+### 2.3.10 2일차 자율학습
 
+```ruby
+# 16개 수를 가진 배열의 내용을 each만 사용해서 한번에 4개씩 출력. enumerable 안에 있는 each_slice를 이용해서 동일한 작업
+number_list = [*1..10]
+
+number = 1
+number_list.each do |item|
+    index = number_list.index(item)
+    if (number_list.index(item)+1) % 4 == 1
+        puts "item: #{number}"
+        puts number_list[index..index+3]
+        number += 1
+    end
+end
+
+# each_slice 사용
+number_list.each_slice(4).to_a
+
+# correct answer 
+number_list.each { |i|print "#{i}#{i % 4 == 0 ? "\n" : ','}" }
+
+# Tree클래스 중에 initializer가 해시 내부에 포함된 구조로...
+# data example
+family = {'grandpa' => { 'dad' => {'child 1' => {}, 'child 2' => {}}, 'uncle' => { 'child 3' => {}, 'child 4' => {}}}}
+
+class Tree
+    attr_accessor :children, :node_name
+
+    def initialize(tree = {})
+        @node_name = tree.keys[0]
+        @children = tree[@node_name].collect { |k, v| Tree.new({ k => v }) }
+    end
+
+    def visit_all(&block)
+        visit &block
+        children.each {|c| c.visit_all &block}
+    end
+
+    def visit(&block)
+        block.call self
+    end
+end
+
+ruby_tree = Tree.new(family)
+
+puts "Visiting a node"
+ruby_tree.visit {|node| puts node.node_name}
+puts
+
+puts "visiting entire tree"
+ruby_tree.visit_all {|node| puts node.node_name}
+
+# 파일 안에서 특정 표현을 포함하는 줄을 골라서 출력하는 grep 도구를 작성. 줄번호 함께 출력
+
+module Grep
+    def read_file
+        File.open(get_filename, 'r') do |f|
+            f.each_line.with_index do |line, index|
+                if line.include?(get_search)
+                    puts "Found #{get_search} in #{index}'s line - #{line}"
+                end
+            end
+        end
+    end
+end
+
+class Text
+    include Grep
+    attr_accessor :filename, :search
+
+    def initialize(filename, search)
+        @filename = filename
+        @search = search
+    end
+
+    def get_filename
+        filename
+    end
+
+    def get_search
+        search
+    end
+end
+
+Text.new('grep_test.txt', 'seulchan').read_file
+# 사용시에 ruby grep.rb
+
+# 개선된 코드: grep 방식 구현
+Text.new(ARGV[0], ARGV[1]).read_file
+# ruby grep.rb grep_test.txt seulchan
+```
